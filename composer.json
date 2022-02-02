@@ -1,0 +1,26 @@
+{
+    "name": "infocamere/telemaco",
+    "version": "1.4.24",
+    "type": "library",
+    "description": "Utilità per il servizio Telemaco",
+    "require": {
+        "php": "^7.2",
+        "fabpot/goutte": "~4.0",
+        "nesbot/carbon": "^2.35",
+        "illuminate/support": "^8.0"
+        
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5.8 || ^9.3.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Infocamere\\Telemaco\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Infocamere\\Telemaco\\Tests\\": "tests/"
+        }
+    }
+}

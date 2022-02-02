@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PraticaCdorExtra xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://praticacdor.infocamere.it/ptco/res/xsd/ptcoExtra.xsd">
+    <CciaaRiferimento></CciaaRiferimento>
+    <PraticaId>0</PraticaId>
+    <TipoPratica></TipoPratica>
+    <Certificato>
+        <NumeroCopie></NumeroCopie>
+        <AutorizzazioniExtra>
+            <NumeroCopie></NumeroCopie>
+            <NumeroVisti>0</NumeroVisti>
+            <NumeroUPICA></NumeroUPICA>
+        </AutorizzazioniExtra>
+        <IdAllegato></IdAllegato>
+    </Certificato>
+    <Allegati>
+        <Allegato>
+            <IdAllegato></IdAllegato>
+            <OpzioniAllegato>
+                <NumeroCopie>0</NumeroCopie>
+                <NumeroVisti></NumeroVisti>
+                <NumeroUPICA></NumeroUPICA>
+            </OpzioniAllegato>
+            <NomeFile></NomeFile>
+            <DescrizioneFile></DescrizioneFile>
+            <TipoDocumento>
+                <Codice></Codice>
+                <Descrizione></Descrizione>
+            </TipoDocumento>
+        </Allegato>
+    </Allegati>
+    <FlagPostale>false</FlagPostale>
+    <FlagProforma></FlagProforma>
+    <FlagPagDifferito></FlagPagDifferito>
+    <GiacenzaMerci></GiacenzaMerci>
+    <FlagPraticaUrgente></FlagPraticaUrgente>
+    <FlagStampaAzienda></FlagStampaAzienda>
+</PraticaCdorExtra>

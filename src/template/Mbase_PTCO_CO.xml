@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type='text/xsl' href='http://praticacdor.infocamere.it/ptco/res/xsl/mob_ptco_CO.xsl'?>
+<Domanda xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://praticacdor.infocamere.it/ptco/res/xsd/ptco.xsd">
+    <TIPOPRATICA>CO</TIPOPRATICA>
+    <DATI-IMPRESA>
+        <Provincia siglaProv=""/>
+        <Numero></Numero>
+        <CodiceFiscale></CodiceFiscale>
+        <Denominazione></Denominazione>
+    </DATI-IMPRESA>
+    <DATI-CERTIFICATO>
+        <Speditore></Speditore>
+        <Destinatario></Destinatario>
+        <PaesiDestinazione>
+            <PaeseDestinazione nomePaeseDestinazione=""/>
+        </PaesiDestinazione>
+        <PaesiOrigine>
+        </PaesiOrigine>
+        <FatturatoTotale></FatturatoTotale>
+        <Trasporto></Trasporto>
+        <Osservazioni></Osservazioni>
+    </DATI-CERTIFICATO>
+    <DICHIARAZIONE-AGGIUNTIVA>
+        <ORIGINEMERCE></ORIGINEMERCE>
+        <DETTAGLIO-ORIG-MERCE dichiarazioneRichiedente="Il sottoscritto rilascia sotto la propria responsabilita' tutte le dichiarazioni contenute nella presente domanda, ai sensi dell'art. 47 DPR 28 dicembre 2000, n. 445, recante il testo unico delle disposizioni legislative e regolamentari in materia di documentazione amministrativa, consapevole delle sanzioni penali previste dall'articolo 76 della medesima legge in caso di falsita' in atti e di dichiarazioni mendaci e che la non veridicita' delle dichiarazioni resecomporta la decadenza dai benefici eventualmente conseguenti al rilascio del certificato ottenuto sulla base delle stesse.">
+            <PaeseComunitario></PaeseComunitario>
+            <ModalitaProduzione></ModalitaProduzione>
+            <AziendaProduttrice></AziendaProduttrice>
+            <ModificheSubite></ModificheSubite>
+            <AziendaModifiche></AziendaModifiche>
+            <PaeseExtraComunitario></PaeseExtraComunitario>
+            <DocumentazioneAllegata></DocumentazioneAllegata>
+        </DETTAGLIO-ORIG-MERCE>
+    </DICHIARAZIONE-AGGIUNTIVA>
+    <RIEPILOGO-FATTURE>
+    </RIEPILOGO-FATTURE>
+</Domanda>

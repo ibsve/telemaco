@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?xml-stylesheet type='text/xsl' href='http://praticacdor.infocamere.it/ptco/res/xsl/mob_ptco.xsl'?>
+<Domanda xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://praticacdor.infocamere.it/ptco/res/xsd/ptco.xsd">
+    <TIPOPRATICA>DD</TIPOPRATICA>
+    <DATI-IMPRESA>
+        <Provincia siglaProv=""/>
+        <Numero></Numero>
+        <CodiceFiscale></CodiceFiscale>
+        <Denominazione></Denominazione>
+    </DATI-IMPRESA>
+    <CERTIFICATO-DENUNCIA>
+        <DataDenuncia></DataDenuncia>
+        <Tipo>DISTRUZ</Tipo>
+        <DocumentiDenunciati>
+            <!--<DocumentoDenunciato identificativo=""/>-->
+        </DocumentiDenunciati>
+    </CERTIFICATO-DENUNCIA>
+</Domanda>
