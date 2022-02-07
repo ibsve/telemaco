@@ -1,6 +1,6 @@
 {
     "name": "infocamere/telemaco",
-    "version": "1.4.24",
+    "version": "1.4.25",
     "type": "library",
     "description": "Utilità per il servizio Telemaco",
     "require": {
