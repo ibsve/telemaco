@@ -232,7 +232,7 @@ class TelemacoClient
 
         $f = $c->filter("#all tbody > tr")->each(function (DomCrawler $node, $i) use ($codPratica, $nco) {
             $pdf = $node->children()->first()->text();
-            $pdf = Str::after(Str::replaceFirst($codPratica, $nco, $pdf), '_');
+            $pdf = empty($nco) ? Str::after($pdf, '_') : Str::after(Str::replaceFirst($codPratica, $nco, $pdf), '_');
 
             $s = $node->filter("img")->first()->extract(["onclick"]);
             
