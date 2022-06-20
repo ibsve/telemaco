@@ -6,7 +6,6 @@ use Goutte\Client;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-use Infocamere\Telemaco\Utils\SpidClient;
 
 class TelemacoClient
 {
@@ -40,85 +39,40 @@ class TelemacoClient
 
         $text = $this->crawler->filter('body')->text();
 
-        if (Str::contains($text, 'aperta')) {
+        if ($this->contains($text, 'aperta')) {
             $form = $this->crawler->filter('.eacoForm')->form();
             $this->crawler = $this->client->submit($form, ['userid' => $username, 'password' => $password]);   
             $text = $this->crawler->filter('body')->text();
         }
 
-        if (Str::contains($text, 'completa')) {
+        if ($this->contains($text, 'completa')) {
             //$this->crawler = $this->client->click($this->crawler->selectLink('LOGOUT')->link());
             $message->message = $text;
             $message->codError = "AU03";
         }
 
-        if (Str::contains($text, 'scaduta')) {
+        if ($this->contains($text, 'scaduta')) {
             $message->message = $text;
             $message->codError = "AU04";
         }
         
-        if (Str::contains($text, 'scadenza')) {
+        if ($this->contains($text, 'scadenza')) {
             $this->crawler = $this->client->click($this->crawler->selectLink('OK')->link());
         }
 
-        if (Str::contains($text, 'riuscita')) {
+        if ($this->contains($text, 'riuscita')) {
             $message->message = "Autenticazione Telemaco non riuscita, utente e/o password errati.";
             $message->codError = "AU01";
         }
 
-        if (Str::contains($text, 'nuova password')) {
+        if ($this->contains($text, 'nuova password')) {
             $message->message = "Autenticazione Telemaco non riuscita, password scaduta. Rinnovare la password accedendo al sito www.registroimprese.it.";
             $message->codError = "AU09";
         }
-
-        /*if (Str::contains($text, 'attuazione')) {
-            $message->message = "Autenticazione Telemaco non riuscita, utente non abilitato all'accesso tramite password.";
-            $message->codError = "AU11";
-        }*/
         
         $message->result = "OK";
 
         return $message;
-    }
-
-    public function loginSpid($username, $password, $provider) 
-    {        
-        $this->crawler = $this->client->request('GET', 'https://praticacdor.infocamere.it/ptco/common/Login.action');
-
-        $link = $this->crawler->selectLink('SPID');
-    
-        $this->crawler = $this->client->click($link->link());
-
-        $this->crawler = $this->crawler->filter('#spid');
-
-        $ru = $this->crawler->filter('#RUDiv')->text();
-
-        $spid = new SpidClient();
-
-        $prv = "Infocamere\\Telemaco\\Utils\\".ucfirst($provider).'Provider';
-        
-        $spid->setProvider(new $prv());
-
-        $this->crawler = $this->client->request("POST", "spid-start", [
-            "RU" => $ru,
-            "auth_type" => "SPID",
-            "idpID" => $spid->getUrl(),
-            "cookies" => $this->client->getCookieJar()->all()
-        ]);
-
-        $spid->setClient($this->client);
-
-        $spid->setCrawler($this->crawler);
-        
-        if ($spid->doLogin($username, $password)) {
-            $this->client = $spid->getClient();
-
-            $this->crawler = $spid->getCrawler();
-        
-            return $this->client->getResponse();
-        }
-
-        return false;
     }
 
     /**
@@ -135,24 +89,11 @@ class TelemacoClient
      * @return string
      */
     public function fondo()
-    {        
-        /*$this->crawler = $this->client->request('GET', 'https://mypage.infocamere.it/group/telemacopay', [
-            "cookies" => $this->client->getCookieJar()->all()
-        ]);
-
-        $text = $this->crawler->filter('body')->text();
-
-        if (Str::contains($text, 'Non Trovato')) {
-            $this->crawler = $this->client->request('GET', 'https://mypage.infocamere.it/group/telemacoufficio/saldo', [
-                "cookies" => $this->client->getCookieJar()->all()
-            ]);
-        }
-
-        $diritti = $this->crawler->filter('#saldoDirittiValue')->attr('value');*/
+    {      
 
         $diritti = $this->crawler->filter("td[width='125px']")->last()->text();
 
-        return Str::substr($diritti, 2);
+        return $this->substr($diritti, 2);
     }
 
     /**
@@ -182,7 +123,7 @@ class TelemacoClient
 
         $html = $res->getContent();
 
-        $t = Str::before(trim($html), 'Distinta');
+        $t = $this->before(trim($html), 'Distinta');
         $uri = trim(substr($t, strrpos($t, "=")+1, -2));
         
         $this->client->request("GET", "https://praticacdor.infocamere.it/ptco/FpDownloadFile?id=$uri", [
@@ -227,16 +168,16 @@ class TelemacoClient
         $c->addHtmlContent($html);
 
         $nco = $c->filter("#divNoteSportello")->nextAll()->first()->text();
-        $nco = Str::after(Str::before($nco, "-"), "to:");
+        $nco = $this->after($this->before($nco, "-"), "to:");
         $nco = trim($nco);
 
         $f = $c->filter("#all tbody > tr")->each(function (DomCrawler $node, $i) use ($codPratica, $nco) {
             $pdf = $node->children()->first()->text();
-            $pdf = empty($nco) ? Str::after($pdf, '_') : Str::after(Str::replaceFirst($codPratica, $nco, $pdf), '_');
+            $pdf = empty($nco) ? $this->after($pdf, '_') : $this->after($this->replaceFirst($codPratica, $nco, $pdf), '_');
 
             $s = $node->filter("img")->first()->extract(["onclick"]);
             
-            $ll = explode(",", str_replace('"', '', Str::after(Str::before($s[0], ")"), "doStampaOnline(")));
+            $ll = explode(",", str_replace('"', '', $this->after($this->before($s[0], ")"), "doStampaOnline(")));
 
             $this->client->request("POST", "/ptco/common/StampaModelloOnline.action", [
                 "cookies" => $this->client->getCookieJar()->all(),
@@ -249,7 +190,7 @@ class TelemacoClient
                 
             $res = $this->client->getResponse();
     
-            $b64 = trim(Str::after(Str::before($res, "//var pdfDataB"), "pdf_data ="));
+            $b64 = trim($this->after($this->before($res, "//var pdfDataB"), "pdf_data ="));
             
             $bdata = substr($b64, 1, strlen($b64)-3);
 
@@ -275,7 +216,7 @@ class TelemacoClient
     public function aggiornaPassword($username, $password, $newPassword = null)
     {
         if (is_null($newPassword)) {
-            $newPassword = Str::random(12);
+            $newPassword = $this->random(12);
         }
 
         $this->crawler = $this->client->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
@@ -291,7 +232,7 @@ class TelemacoClient
         $text = $this->crawler->text();
         
         //InfoCamere: Password cambiata Password cambiata Password sostituita correttamente. OK
-        if (Str::contains($text, 'sostituita')) {            
+        if ($this->contains($text, 'sostituita')) {            
             return [
                 'username' => $username, 
                 'password' => $newPassword, 
@@ -363,7 +304,7 @@ class TelemacoClient
 
         $dati_cert = $doc->getElementsByTagName('DATI-CERTIFICATO')->item(0);
 
-        if (Str::contains($dati['merci'], $fp)) {
+        if ($this->contains($dati['merci'], $fp)) {
             $t6 = explode($fp, $dati['merci']);
             $t7 = explode($fp, $dati['quantita']);
 
@@ -516,5 +457,120 @@ class TelemacoClient
         $cciaa->nodeValue = $dati['cciaa'];
         $tipo = $doc->getElementsByTagName('TipoPratica')->item(0);
         $tipo->nodeValue = $dati['tipo'];
+    }
+
+    /**
+    * Determine if a given string contains a given substring.
+    *
+    * @param  string  $haystack
+    * @param  string|string[]  $needles
+    * @param  bool  $ignoreCase
+    * @return bool
+    */
+    private function contains($haystack, $needles, $ignoreCase = false)
+    {
+        if ($ignoreCase) {
+            $haystack = mb_strtolower($haystack);
+            $needles = array_map('mb_strtolower', (array) $needles);
+        }
+
+        foreach ((array) $needles as $needle) {
+            if ($needle !== '' && str_contains($haystack, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the portion of the string specified by the start and length parameters.
+     *
+     * @param  string  $string
+     * @param  int  $start
+     * @param  int|null  $length
+     * @return string
+     */
+    public function substr($string, $start, $length = null)
+    {
+        return mb_substr($string, $start, $length, 'UTF-8');
+    }
+
+    /**
+     * Get the portion of a string before the first occurrence of a given value.
+     *
+     * @param  string  $subject
+     * @param  string  $search
+     * @return string
+     */
+    public function before($subject, $search)
+    {
+        if ($search === '') {
+            return $subject;
+        }
+
+        $result = strstr($subject, (string) $search, true);
+
+        return $result === false ? $subject : $result;
+    }
+
+    /**
+     * Return the remainder of a string after the first occurrence of a given value.
+     *
+     * @param  string  $subject
+     * @param  string  $search
+     * @return string
+     */
+    public function after($subject, $search)
+    {
+        return $search === '' ? $subject : array_reverse(explode($search, $subject, 2))[0];
+    }
+
+     /**
+     * Replace the first occurrence of a given value in the string.
+     *
+     * @param  string  $search
+     * @param  string  $replace
+     * @param  string  $subject
+     * @return string
+     */
+    public function replaceFirst($search, $replace, $subject)
+    {
+        $search = (string) $search;
+
+        if ($search === '') {
+            return $subject;
+        }
+
+        $position = strpos($subject, $search);
+
+        if ($position !== false) {
+            return substr_replace($subject, $replace, $position, strlen($search));
+        }
+
+        return $subject;
+    }
+
+    /**
+     * Generate a more truly "random" alpha-numeric string.
+     *
+     * @param  int  $length
+     * @return string
+     */
+    public function random($length = 16)
+    {
+        return (static::$randomStringFactory ?? function ($length) {
+            $string = '';
+
+            while (($len = strlen($string)) < $length) {
+                $size = $length - $len;
+
+                $bytes = random_bytes($size);
+
+                $string .= substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $size);
+            }
+
+            return $string;
+        })($length);
     }
 }
