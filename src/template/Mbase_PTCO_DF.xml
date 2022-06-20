@@ -8,7 +8,7 @@
         <Denominazione></Denominazione>
     </DATI-IMPRESA>
     <CERTIFICATO-DENUNCIA>
-        <DataDenuncia>2021-03-11+01:00</DataDenuncia>
+        <DataDenuncia></DataDenuncia>
         <Tipo>FUR_SMAR</Tipo>
         <DocumentiDenunciati>
             <!--<DocumentoDenunciato identificativo="A0021500"/>-->

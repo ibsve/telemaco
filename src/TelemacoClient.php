@@ -47,7 +47,7 @@ class TelemacoClient
         }
 
         if (Str::contains($text, 'completa')) {
-            $this->crawler = $this->client->click($this->crawler->selectLink('LOGOUT')->link());
+            //$this->crawler = $this->client->click($this->crawler->selectLink('LOGOUT')->link());
             $message->message = $text;
             $message->codError = "AU03";
         }
