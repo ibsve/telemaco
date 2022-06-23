@@ -5,7 +5,7 @@ namespace Infocamere\Telemaco;
 use Goutte\Client;
 use Symfony\Component\DomCrawler\Crawler as DomCrawler;
 use Carbon\Carbon;
-use Support\Str;
+use Infocamere\Telemaco\Support\Str;
 
 class TelemacoClient
 {
@@ -164,16 +164,16 @@ class TelemacoClient
         $c->addHtmlContent($html);
 
         $nco = $c->filter("#divNoteSportello")->nextAll()->first()->text();
-        $nco = Str::after($this->before($nco, "-"), "to:");
+        $nco = Str::after(Str::before($nco, "-"), "to:");
         $nco = trim($nco);
 
         $f = $c->filter("#all tbody > tr")->each(function (DomCrawler $node, $i) use ($codPratica, $nco) {
             $pdf = $node->children()->first()->text();
-            $pdf = empty($nco) ? $this->after($pdf, '_') : $this->after($this->replaceFirst($codPratica, $nco, $pdf), '_');
+            $pdf = empty($nco) ? Str::after($pdf, '_') : Str::after(Str::replaceFirst($codPratica, $nco, $pdf), '_');
 
             $s = $node->filter("img")->first()->extract(["onclick"]);
             
-            $ll = explode(",", str_replace('"', '', $this->after($this->before($s[0], ")"), "doStampaOnline(")));
+            $ll = explode(",", str_replace('"', '', Str::after(Str::before($s[0], ")"), "doStampaOnline(")));
 
             $this->client->request("POST", "/ptco/common/StampaModelloOnline.action", [
                 "cookies" => $this->client->getCookieJar()->all(),
