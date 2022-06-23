@@ -1,10 +1,10 @@
 {
     "name": "infocamere/telemaco",
-    "version": "1.4.34",
+    "version": "1.4.35",
     "type": "library",
     "description": "Utilità per il servizio Telemaco",
     "require": {
-        "php": "^7.2",
+        "php": "^7.2|^8.0",
         "fabpot/goutte": "~4.0",
         "nesbot/carbon": "^2.35"        
     },

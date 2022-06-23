@@ -15,7 +15,7 @@ class TelemacoClient
     public function __construct()
     {
         $this->client = new Client();
-        $this->crawler = null;      
+        $this->crawler = null; 
     }  
 
     /**
