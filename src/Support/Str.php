@@ -1,6 +1,6 @@
 <?php
 
-namespace Support;
+namespace Infocamere\Telemaco\Support;
 
 class Str
 {
@@ -12,7 +12,7 @@ class Str
     * @param  bool  $ignoreCase
     * @return bool
     */
-    private static function contains($haystack, $needles, $ignoreCase = false)
+    public static function contains($haystack, $needles, $ignoreCase = false)
     {
         if ($ignoreCase) {
             $haystack = mb_strtolower($haystack);

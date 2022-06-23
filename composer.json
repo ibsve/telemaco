@@ -1,8 +1,10 @@
 {
     "name": "infocamere/telemaco",
-    "version": "1.4.35",
+    "version": "1.4.36",
     "type": "library",
     "description": "Utilità per il servizio Telemaco",
+    "homepage": "https://github.com/ibsve/telemaco",
+    "license": "MIT",
     "require": {
         "php": "^7.2|^8.0",
         "fabpot/goutte": "~4.0",
