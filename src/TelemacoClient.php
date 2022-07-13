@@ -212,7 +212,10 @@ class TelemacoClient
     public function aggiornaPassword($username, $password, $newPassword = null)
     {
         if (is_null($newPassword)) {
-            $newPassword = Str::random(12);
+            $a = [':', '?', '*', '!'];
+            shuffle($a);
+            $s = Str::random(12);
+            $newPassword = str_replace($s[array_rand(str_split($s))],$a[array_rand($a)],$s);
         }
 
         $this->crawler = $this->client->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
