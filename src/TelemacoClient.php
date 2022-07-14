@@ -212,25 +212,25 @@ class TelemacoClient
     public function aggiornaPassword($username, $password, $newPassword = null)
     {
         if (is_null($newPassword)) {
-            $a = [':', '?', '*', '!'];
-            shuffle($a);
-            $s = Str::random(12);
-            $newPassword = str_replace($s[array_rand(str_split($s))],$a[array_rand($a)],$s);
+            $c = [':', '?', '!', '.', '*'];
+            shuffle($c);
+            $n = rand(1, 5);
+            $newPassword = str_shuffle(Str::random(11).$c[$n]);
         }
 
-        $this->crawler = $this->client->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
-        $form = $this->crawler->selectButton('Conferma')->form();
+        $crawler = $this->client->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
+        $form = $crawler->selectButton('Conferma')->form();
 
-        $this->crawler = $this->client->submit($form, [
+        $crawler = $this->client->submit($form, [
             'userid' => $username, 
             'password' => $password, 
             'new_password' => $newPassword, 
             'cfr_password' => $newPassword
         ]);
 
-        $text = $this->crawler->text();
+        $text = $crawler->text();
         
-        if (Str::contains($text, 'sostituita')) {            
+        if (Str::contains($text, 'sostituita', true)) {            
             return [
                 'username' => $username, 
                 'password' => $newPassword, 
@@ -240,6 +240,9 @@ class TelemacoClient
         }
         else {
             return [
+                'username' => $username,
+                'password' => $password,
+                'new_password' => $newPassword,
                 'message' => $text,
             ];
         }
