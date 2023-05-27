@@ -2,8 +2,9 @@
 
 namespace Infocamere\Telemaco;
 
-use Goutte\Client;
-use Symfony\Component\DomCrawler\Crawler as DomCrawler;
+use Symfony\Component\BrowserKit\HttpBrowser;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\DomCrawler\Crawler;
 use Carbon\Carbon;
 use Infocamere\Telemaco\Support\Str;
 
@@ -14,7 +15,7 @@ class TelemacoClient
     
     public function __construct()
     {
-        $this->client = new Client();
+        $this->client = new HttpBrowser(HttpClient::create());
         $this->crawler = null; 
     }  
 
@@ -53,7 +54,7 @@ class TelemacoClient
         }
         
         if (Str::contains($text, 'scadenza')) {
-            $this->crawler = $this->client->click($this->crawler->selectLink('OK')->link());
+            $this->crawler = $this->client->clickLink($this->crawler->selectLink('OK')->link());
         }
 
         if (Str::contains($text, 'riuscita')) {
@@ -76,7 +77,7 @@ class TelemacoClient
      */
     public function logout()
     {
-        $this->client->click($this->crawler->selectLink('Esci')->link());
+        $this->client->clickLink($this->crawler->selectLink('Esci')->link());
     }
 
     /**
