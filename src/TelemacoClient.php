@@ -54,7 +54,7 @@ class TelemacoClient
         }
         
         if (Str::contains($text, 'scadenza')) {
-            $this->crawler = $this->client->clickLink($this->crawler->selectLink('OK')->link());
+            $this->crawler = $this->client->click($this->crawler->selectLink('OK')->link());
         }
 
         if (Str::contains($text, 'riuscita')) {
@@ -77,7 +77,7 @@ class TelemacoClient
      */
     public function logout()
     {
-        $this->client->clickLink($this->crawler->selectLink('Esci')->link());
+        $this->client->click($this->crawler->selectLink('Esci')->link());
     }
 
     /**
