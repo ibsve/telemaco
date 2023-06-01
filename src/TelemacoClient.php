@@ -3,20 +3,21 @@
 namespace Infocamere\Telemaco;
 
 use Symfony\Component\BrowserKit\HttpBrowser;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpClient\HttpClient;
 use Carbon\Carbon;
 use Infocamere\Telemaco\Support\Str;
 
 class TelemacoClient
 {
-    private $client;
-    private $crwaler;
+    /**
+     * @var HttpBrowser
+     */
+    protected $browser;
     
     public function __construct()
     {
-        $this->client = new HttpBrowser(HttpClient::create());
-        $this->crawler = null; 
+        $this->browser = new HttpBrowser(HttpClient::create());
     }  
 
     /**
@@ -31,16 +32,14 @@ class TelemacoClient
     {
         $message = json_decode('{"data":null,"codError":null,"message":null,"result":null}');
 
-        $this->crawler = $this->client->request('GET', 'https://praticacdor.infocamere.it/ptco/common/Login.action');
-        $form = $this->crawler->filter('.eacoForm')->form();
-        $this->crawler = $this->client->submit($form, ['userid' => $username, 'password' => $password]);
+        $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/common/Login.action');
+        $this->browser->submitForm('Accedi', ['userid' => $username, 'password' => $password]);
 
-        $text = $this->crawler->filter('body')->text();
+        $text = $this->browser->getCrawler()->filter('body')->text();
 
         if (Str::contains($text, 'aperta')) {
-            $form = $this->crawler->filter('.eacoForm')->form();
-            $this->crawler = $this->client->submit($form, ['userid' => $username, 'password' => $password]);   
-            $text = $this->crawler->filter('body')->text();
+            $this->browser->submitForm('Accedi', ['userid' => $username, 'password' => $password]);
+            $text = $this->browser->getCrawler()->filter('body')->text();
         }
 
         if (Str::contains($text, 'completa')) {
@@ -54,7 +53,7 @@ class TelemacoClient
         }
         
         if (Str::contains($text, 'scadenza')) {
-            $this->crawler = $this->client->click($this->crawler->selectLink('OK')->link());
+            $this->browser->clickLink('Ok');
         }
 
         if (Str::contains($text, 'riuscita')) {
@@ -77,7 +76,7 @@ class TelemacoClient
      */
     public function logout()
     {
-        $this->client->click($this->crawler->selectLink('Esci')->link());
+        $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/eacologout');
     }
 
     /**
@@ -87,8 +86,7 @@ class TelemacoClient
      */
     public function fondo()
     {      
-
-        $diritti = $this->crawler->filter("td[width='125px']")->last()->text();
+        $diritti = $this->browser->getCrawler()->filter("td[width='125px']")->last()->text();
 
         return Str::substr($diritti, 2);
     }
@@ -102,34 +100,65 @@ class TelemacoClient
      */
     public function distinta($codPratica)
     {
-        $this->crawler = $this->client->request('POST', 'https://praticacdor.infocamere.it/ptco/common/ListaPraticheChiuse.action', [
-            "opzioneFiltro" => "CODICE_PRATICA", 
-            "valoreFiltro" => $codPratica, 
-            "tipoPratica" => ""
-        ]);
+        $this->dettaglioPratica($codPratica);
 
-        $f = $this->crawler->selectLink($codPratica)->attr("href");
-
-        $v = str_replace("'", '', substr($f, strpos($f, "(")+1, -1));
-
-        $vv = explode(",", $v);
-
-        $this->client->request("GET", "https://praticacdor.infocamere.it/ptco/common/DettaglioPraticaChiusa.action?codPraticaSel=".$vv[0]."&pridPraticaSel=".$vv[1]."&pvPraticaSel=".$vv[2]);
-
-        $res = $this->client->getResponse();
+        $res = $this->browser->getResponse();
 
         $html = $res->getContent();
 
         $t = Str::before(trim($html), 'Distinta');
         $uri = trim(substr($t, strrpos($t, "=")+1, -2));
         
-        $this->client->request("GET", "https://praticacdor.infocamere.it/ptco/FpDownloadFile?id=$uri", [
-            "cookies" => $this->client->getCookieJar()->all()
+        $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/FpDownloadFile?id='.$uri, [
+            'cookies' => $this->browser->getCookieJar()->all()
         ]);
 
-        $pdf = $this->client->getResponse();
+        $pdf = $this->browser->getResponse()->getContent();
 
         return $pdf;
+    }
+
+    /**
+     * Scarica da Cert'ò tutti gli allegati della pratica
+     * 
+     * @param string $codPratica
+     * @param boolean $rettifica
+     * 
+     * @return array
+     * */
+    public function allegati($codPratica, $rettifica = false)
+    {
+        $this->dettaglioPratica($codPratica, $rettifica);
+
+        $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $this->browser->getResponse()->getContent());
+        $crawler = new Crawler();
+        $crawler->addHtmlContent($html);
+        //$ret = [];
+
+        $ret = $crawler->filter('.DisplaytagTable > tbody')->children()->each(function(Crawler $node, $i) {
+            $descr = $node->children()->first()->filter('i')->text();
+            
+            if (!Str::contains($descr, ['modello', 'dettaglio'], true)) {
+                $link = $node->children()->last()->children()->first();
+                $fileName = $link->attr('title');
+                $href = $link->attr('href');
+
+                $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/'.$href, [
+                    'cookies' => $this->browser->getCookieJar()->all()
+                ]);
+        
+                $file = $this->browser->getResponse()->getContent();
+
+                $a = [];
+                $a['descr'] = $descr;
+                $a['file_name'] = $fileName;
+                $a['file'] = $file;
+
+                return $a;
+            }
+        });
+
+        return $ret;
     }
 
     /**
@@ -141,53 +170,35 @@ class TelemacoClient
      */
     public function coe($codPratica)
     {
-        $this->crawler = $this->client->request("POST", "https://praticacdor.infocamere.it/ptco/common/ListaPraticheChiuse.action", [
-            "opzioneFiltro" => "CODICE_PRATICA", 
-            "valoreFiltro" => $codPratica, 
-            "tipoPratica" => ""
-        ]);
+        $this->dettaglioPratica($codPratica);
 
-        $f = $this->crawler->selectLink($codPratica)->attr("href");
-
-        $v = str_replace("'", "", substr($f, strpos($f, "(")+1, -1));
-
-        $vv = explode(",", $v);
-
-        $this->client->request("GET", "https://praticacdor.infocamere.it/ptco/common/DettaglioPraticaChiusa.action?codPraticaSel=".$vv[0]."&pridPraticaSel=".$vv[1]."&pvPraticaSel=".$vv[2]);
-
-        $res = $this->client->getResponse();
-
-        $html = $res->getContent();
-
-        $html = preg_replace("#<script(.*?)>(.*?)</script>#is", "", $html);
-
-        $c = new DomCrawler();
-        $c->addHtmlContent($html);
-
-        $nco = $c->filter("#divNoteSportello")->nextAll()->first()->text();
-        $nco = Str::after(Str::before($nco, "-"), "to:");
+        $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $this->browser->getResponse()->getContent());
+        $crawler = new Crawler();
+        $crawler->addHtmlContent($html);
+        $nco = $crawler->filter('#divNoteSportello')->nextAll()->first()->text();
+        $nco = Str::after(Str::before($nco, '-'), 'to:');
         $nco = trim($nco);
 
-        $f = $c->filter("#all tbody > tr")->each(function (DomCrawler $node, $i) use ($codPratica, $nco) {
+        $f = $crawler->filter('#all tbody > tr')->each(function (Crawler $node, $i) use ($codPratica, $nco) {
             $pdf = $node->children()->first()->text();
             $pdf = empty($nco) ? Str::after($pdf, '_') : Str::after(Str::replaceFirst($codPratica, $nco, $pdf), '_');
 
-            $s = $node->filter("img")->first()->extract(["onclick"]);
+            $s = $node->filter('img')->first()->extract(['onclick']);
             
-            $ll = explode(",", str_replace('"', '', Str::after(Str::before($s[0], ")"), "doStampaOnline(")));
+            $ll = explode(',', str_replace('"', '', Str::after(Str::before($s[0], ')'), 'doStampaOnline(')));
 
-            $this->client->request("POST", "/ptco/common/StampaModelloOnline.action", [
-                "cookies" => $this->client->getCookieJar()->all(),
-                "richiestaId" => $ll[0],
-                "documentoId" => trim($ll[1]),
-                "tipoDocumento" => trim($ll[2]),
-                "user" => trim($ll[3]),
-                "ente" => trim($ll[4]),
+            $this->browser->request('POST', '/ptco/common/StampaModelloOnline.action', [
+                'cookies' => $this->browser->getCookieJar()->all(),
+                'richiestaId' => $ll[0],
+                'documentoId' => trim($ll[1]),
+                'tipoDocumento' => trim($ll[2]),
+                'user' => trim($ll[3]),
+                'ente' => trim($ll[4]),
             ]);
                 
-            $res = $this->client->getResponse();
+            $res = $this->browser->getResponse()->getContent();
     
-            $b64 = trim(Str::after(Str::before($res, "//var pdfDataB"), "pdf_data ="));
+            $b64 = trim(Str::after(Str::before($res, '//var pdfDataB'), 'pdf_data ='));
             
             $bdata = substr($b64, 1, strlen($b64)-3);
 
@@ -219,17 +230,15 @@ class TelemacoClient
             $newPassword = str_shuffle(Str::random(11).$c[$n]);
         }
 
-        $crawler = $this->client->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
-        $form = $crawler->selectButton('Conferma')->form();
-
-        $crawler = $this->client->submit($form, [
+        $this->browser->request('GET', 'https://login.infocamere.it/eacologin/changePwd.action');
+        $this->browser->submitForm('Conferma', [
             'userid' => $username, 
             'password' => $password, 
             'new_password' => $newPassword, 
             'cfr_password' => $newPassword
         ]);
 
-        $text = $crawler->text();
+        $text = $this->browser->getCrawler()->filter('body')->text();
         
         if (Str::contains($text, 'sostituita', true)) {            
             return [
@@ -459,5 +468,25 @@ class TelemacoClient
         $cciaa->nodeValue = $dati['cciaa'];
         $tipo = $doc->getElementsByTagName('TipoPratica')->item(0);
         $tipo->nodeValue = $dati['tipo'];
+    }
+
+    private function dettaglioPratica($codPratica, $rettifica = false)
+    {
+        $lista = $rettifica ? 'ListaPraticheDaRettificare' : 'ListaPraticheChiuse';
+        $dettaglio = $rettifica ? 'DettaglioPraticaRettifica' : 'DettaglioPraticaChiusa';
+        
+        $this->browser->request('POST', 'https://praticacdor.infocamere.it/ptco/common/'.$lista.'.action', [
+            'opzioneFiltro' => 'CODICE_PRATICA', 
+            'valoreFiltro' => $codPratica, 
+            'tipoPratica' => ''
+        ]);
+
+        $f = $this->browser->getCrawler()->selectLink($codPratica)->attr('href');
+
+        $v = str_replace("'", '', substr($f, strpos($f, '(')+1, -1));
+
+        $vv = explode(',', $v);
+
+        $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/common/'.$dettaglio.'.action?codPraticaSel='.$vv[0].'&pridPraticaSel='.$vv[1].'&pvPraticaSel='.$vv[2]);
     }
 }

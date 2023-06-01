@@ -1,2 +1,5 @@
 /vendor
 composer.lock
+/tests
+phpunit.xml
+phpunit.xml.bak

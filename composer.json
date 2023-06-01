@@ -1,6 +1,6 @@
 {
     "name": "infocamere/telemaco",
-    "version": "1.5.4",
+    "version": "1.5.5",
     "type": "library",
     "description": "Utilità per il servizio Telemaco",
     "homepage": "https://github.com/ibsve/telemaco",
@@ -10,13 +10,20 @@
         "nesbot/carbon": "^2.35",
         "symfony/browser-kit": "^6.2",
         "symfony/http-client": "^6.2",
-        "symfony/dom-crawler": "^6.2",
         "symfony/css-selector": "^6.2",
         "symfony/mime": "^6.2"        
     },
     "autoload": {
         "psr-4": {
             "Infocamere\\Telemaco\\": "src/"
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.6"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }
