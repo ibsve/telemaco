@@ -138,24 +138,18 @@ class TelemacoClient
         $ret = $crawler->filter('.DisplaytagTable > tbody')->children()->each(function(Crawler $node, $i) {
             $descr = $node->children()->first()->filter('i')->text();
             
-            if (!Str::contains($descr, ['modello', 'dettaglio'], true)) {
-                $link = $node->children()->last()->children()->first();
-                $fileName = $link->attr('title');
-                $href = $link->attr('href');
-
-                $this->browser->request('GET', 'https://praticacdor.infocamere.it/ptco/'.$href, [
-                    'cookies' => $this->browser->getCookieJar()->all()
-                ]);
+            $link = $node->children()->last()->children()->selectLink('Scarica');
+            $fileName = $link->attr('title');
+            $this->browser->click($link->link());
         
-                $file = $this->browser->getResponse()->getContent();
+            $file = $this->browser->getResponse()->getContent();
 
-                $a = [];
-                $a['descr'] = $descr;
-                $a['file_name'] = $fileName;
-                $a['file'] = $file;
+            $a = [];
+            $a['descr'] = $descr;
+            $a['file_name'] = $fileName;
+            $a['file'] = $file;
 
-                return $a;
-            }
+            return $a;
         });
 
         return $ret;
