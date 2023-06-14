@@ -53,7 +53,7 @@ class TelemacoClient
         }
         
         if (Str::contains($text, 'scadenza')) {
-            $this->browser->clickLink('Ok');
+            $this->browser->clickLink('OK');
         }
 
         if (Str::contains($text, 'riuscita')) {
