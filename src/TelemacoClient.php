@@ -220,7 +220,7 @@ class TelemacoClient
         if (is_null($newPassword)) {
             $c = [':', '?', '!', '.', '*'];
             shuffle($c);
-            $n = rand(1, 5);
+            $n = rand(1, 4);
             $newPassword = str_shuffle(Str::random(11).$c[$n]);
         }
 
