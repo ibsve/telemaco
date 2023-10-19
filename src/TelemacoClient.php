@@ -56,6 +56,12 @@ class TelemacoClient
             $this->browser->clickLink('OK');
         }
 
+        if (Str::contains($text, 'abilitato')) {
+            $message->message = "Utente {$username} non abilitato per la risorsa richiesta.";
+            $message->codError = "AU08";
+            $this->browser->clickLink('Logout');
+        }
+
         if (Str::contains($text, 'riuscita')) {
             $message->message = "Autenticazione Telemaco non riuscita, utente e/o password errati.";
             $message->codError = "AU01";
