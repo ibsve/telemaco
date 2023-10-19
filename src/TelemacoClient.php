@@ -253,6 +253,27 @@ class TelemacoClient
     }
 
     /**
+     * Ricava i dati dell'utente Telemaco (nome, cognome, email, telefono)
+     */
+    public function datiTelemaco()
+    {
+        $this->browser->request('GET', 'https://webtelemaco.infocamere.it/spor/private/EsitoRicercaAnagrafica.action');
+
+        $cognome = $this->browser->getCrawler()->filter('#ana_cognome')->attr('value');
+        $nome = $this->browser->getCrawler()->filter('#ana_nome')->attr('value');
+        $email = $this->browser->getCrawler()->filter('#ana_email')->attr('value');
+        $telefono = $this->browser->getCrawler()->filterXPath('//input[@name="anagrafica.telefono"]')->attr('value');
+
+        $r = [
+            'nome' => $nome.' '.$cognome,
+            'email' => $email,
+            'telefono' => $telefono,
+        ];
+
+        return $r;
+    }
+
+    /**
      * Genera il file XML con i dati per il tipo specificato (co, va, dtr)
      * 
      * @param string $tipo
