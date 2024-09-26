@@ -92,9 +92,17 @@ class TelemacoClient
      */
     public function fondo()
     {      
-        $diritti = $this->browser->getCrawler()->filter("td[width='125px']")->last()->text();
+        /*$diritti = $this->browser->getCrawler()->filter("td[width='125px']")->last()->text();
 
-        return Str::substr($diritti, 2);
+        return Str::substr($diritti, 2);*/
+
+        $this->browser->request('GET', 'https://mypage.infocamere.it/group/telemacopay/saldo', [
+            'cookies' => $this->browser->getCookieJar()->all()
+        ]);
+
+        $diritti = $this->browser->getCrawler()->filter("div.saldoCifra")->first()->text();
+
+        return Str::numbers($diritti);
     }
 
     /**
