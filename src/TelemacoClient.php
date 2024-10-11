@@ -103,7 +103,7 @@ class TelemacoClient
 
         $diritti = $this->browser->getCrawler()->filter("div.saldoCifra")->first()->text();
 
-        $formatter = new NumberFormatter('it');
+        $formatter = new NumberFormatter('it', NumberFormatter::DECIMAL);
 
         return $formatter->format($diritti);
         
