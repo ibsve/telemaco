@@ -2,11 +2,12 @@
 
 namespace Infocamere\Telemaco;
 
-use Symfony\Component\BrowserKit\HttpBrowser;
+use Carbon\Carbon;
+use NumberFormatter;
+use Infocamere\Telemaco\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
-use Carbon\Carbon;
-use Infocamere\Telemaco\Support\Str;
+use Symfony\Component\BrowserKit\HttpBrowser;
 
 class TelemacoClient
 {
@@ -102,7 +103,11 @@ class TelemacoClient
 
         $diritti = $this->browser->getCrawler()->filter("div.saldoCifra")->first()->text();
 
-        return Str::numbers($diritti);
+        $formatter = new NumberFormatter('it');
+
+        return $formatter->format($diritti);
+        
+        //return Str::numbers($diritti);
     }
 
     /**
