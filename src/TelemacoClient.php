@@ -105,7 +105,7 @@ class TelemacoClient
 
         $formatter = new NumberFormatter('it', NumberFormatter::DECIMAL);
 
-        return $formatter->format($diritti);
+        return $formatter->format((float) $diritti);
         
         //return Str::numbers($diritti);
     }
