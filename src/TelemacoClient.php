@@ -3,7 +3,6 @@
 namespace Infocamere\Telemaco;
 
 use Carbon\Carbon;
-use NumberFormatter;
 use Infocamere\Telemaco\Support\Str;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
@@ -103,12 +102,9 @@ class TelemacoClient
 
         $diritti = $this->browser->getCrawler()->filter("div.saldoCifra")->first()->text();
 
-        $formatter = new NumberFormatter('it', NumberFormatter::DECIMAL);
-        $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, 2);
+        $diritti_formatted = trim(Str::before(Str::replaceFirst(',', '.', Str::replaceFirst('.', '', $diritti)), '€'));
 
-        return $formatter->format((float) $diritti);
-        
-        //return Str::numbers($diritti);
+        return (float) $diritti_formatted;
     }
 
     /**
