@@ -100,9 +100,24 @@ class TelemacoClient
             'cookies' => $this->browser->getCookieJar()->all()
         ]);
 
-        $diritti = $this->browser->getCrawler()->filter("div.saldoCifra")->first()->text();
+        $diritti = $this->browser->getCrawler()->filter("div.saldoCifra");
 
-        $diritti_formatted = trim(Str::before(Str::replaceFirst(',', '.', Str::replaceFirst('.', '', $diritti)), '€'));
+        $diritti_formatted = '0.0';
+
+        if ($diritti->count() > 0) {
+            $diritti_formatted = trim(Str::before(Str::replaceFirst(',', '.', Str::replaceFirst('.', '', $diritti->first()->text())), '€'));
+        }
+        else {
+            $this->browser->request('GET', 'https://mypage.infocamere.it/group/telemacoufficio/saldo', [
+                'cookies' => $this->browser->getCookieJar()->all()
+            ]);
+
+            $diritti = $this->browser->getCrawler()->filter("div.saldoCifra");
+
+            if ($diritti->count() > 0) {
+                $diritti_formatted = trim(Str::before(Str::replaceFirst(',', '.', Str::replaceFirst('.', '', $diritti->first()->text())), '€'));
+            }
+        }
 
         return (float) $diritti_formatted;
     }
